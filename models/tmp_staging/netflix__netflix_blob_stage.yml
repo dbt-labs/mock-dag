@@ -1,0 +1,9 @@
+version: 2 
+
+sources:
+  - name: netflix 
+    database: randy_pitcher_workspace_raw 
+    schema: netflix_loading 
+    tables: 
+      - name: netflix_blob_stage 
+        identifier: netflix_blob_stage
