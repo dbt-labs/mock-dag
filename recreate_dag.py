@@ -63,23 +63,22 @@ def recreate_dag(anonymize):
     
     # Iterating through the json list
     for node, dict in manifest['nodes'].items():
-        if dict['resource_type'] in ['model', 'seed', 'snapshot']:
+        resource_type = dict['resource_type']
+        if resource_type in ['model', 'seed', 'snapshot']:
             print(f'Creating node: {node}')
             
             path = os.path.join(DIR_PATH, dict['original_file_path'])
             filename = os.path.basename(path)
-            # create dir if not exists
-            os.makedirs(path.replace(filename,''), exist_ok=True)
             # create file from manifest.json
-            if dict['resource_type'] == 'model':
+            if resource_type == 'model':
+                # create dir if not exists
+                os.makedirs(path.replace(filename,''), exist_ok=True)
                 with open(os.path.join(DIR_PATH, dict['original_file_path']), 'w+') as fp:
                     # python models are different language, so bypassing for now & bringing in exact code.
                     if anonymize == 'False' or dict['language'] == "python":
                         # bring in their exact code
                         fp.write(dict['raw_code'])
                     else:
-
-
                         sql_code=''
                         sources = dict['sources']
                         refs = dict['refs']
@@ -102,14 +101,34 @@ def recreate_dag(anonymize):
                 
             # putting seeds and snapshots into models folder
             else:
-                resource_type = dict['resource_type']
                 move_to_models_path = os.path.join(DIR_PATH, 'models', dict['original_file_path'])
                 filename = os.path.basename(move_to_models_path)
                 print(f'filename: {move_to_models_path}')
                 # create dir if not exists
                 os.makedirs(move_to_models_path.replace(filename,''), exist_ok=True)
                 with open(move_to_models_path.replace('.csv', '.sql'), 'w+') as fp:
-                    fp.write(f'-- this is a recreation of a {resource_type} in the models subfolder: \n\nselect 1 as dummmy_column_1')
+                    if resource_type == 'seed':
+                        fp.write(f'-- this is a recreation of a {resource_type} in the models subfolder: \n\nselect 1 as dummmy_column_1')
+                    else:
+                        sql_code=''
+                        sources = dict['sources']
+                        refs = dict['refs']
+                        if refs == []:
+                            # bring in their commented out sources, but only `select 1` as code
+                            for source in sources:
+                                pre_code="-- {{ source('"
+                                mide_code="', '"
+                                post_code="') }}"
+                                sql_code += f'\n{pre_code}{source[0]}{mide_code}{source[1]}{post_code}'
+                            sql_code += '\n select 1 as dummmy_column_1 \n'
+                            fp.write(sql_code)
+                        else:
+                            for ref in refs:
+                                pre_code="select * from {{ ref('"
+                                post_code="') }}"
+                                sql_code += f'\n{pre_code}{ref[0]}{post_code} \n\n  union all \n'
+                            sql_code += '\nselect 1 as dummmy_column_1 \n'
+                            fp.write(sql_code)
 
     for macro, dict in manifest['macros'].items():
         # remove some of the standard dbt packages, that show up in manifest
