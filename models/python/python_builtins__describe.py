@@ -1,6 +1,10 @@
+def model(dbt, session):
 
-select * from {{ ref('customers') }} 
+    # bring in reference model as dataframe
+    customers_df = dbt.ref("customers")
 
-  union all 
+    # do transformation - apply "describe" function
+    described_df = customers_df.describe()
 
-select 1 as dummmy_column_1 
+    # return dataframe
+    return described_df

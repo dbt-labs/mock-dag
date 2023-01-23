@@ -1,6 +1,12 @@
+def model(dbt, session):
+    target_name = dbt.config.get("target_name")
 
-select * from {{ ref('customers') }} 
+    # bring in reference model as dataframe
+    customers_df = dbt.ref("customers")
 
-  union all 
+    # limit data in dev
+    if target_name == "dev":
+        customers_df = customers_df.limit(10)
 
-select 1 as dummmy_column_1 
+    # return dataframe
+    return customers_df

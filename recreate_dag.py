@@ -73,10 +73,13 @@ def recreate_dag(anonymize):
             # create file from manifest.json
             with open(os.path.join(DIR_PATH, dict['original_file_path']), 'w+') as fp:
                 if dict['resource_type'] == 'model':
-                    if anonymize == 'False':
+                    # python models are different language, so bypassing for now & bringing in exact code.
+                    if anonymize == 'False' or dict['language'] == "python":
                         # bring in their exact code
                         fp.write(dict['raw_code'])
                     else:
+
+
                         sql_code=''
                         sources = dict['sources']
                         refs = dict['refs']
