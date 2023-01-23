@@ -101,16 +101,16 @@ def recreate_dag(anonymize):
 
     for macro, dict in manifest['macros'].items():
         # remove some of the standard dbt packages, that show up in manifest
-        # if dict['package_name'] not in ['dbt', 'dbt_utils', 'dbt_artifacts', 'codegen', 'dbt_snowflake', 'pro_serv_utils']:
-        print(f'Creating macro: {macro}')
-        
-        path = os.path.join(DIR_PATH, dict['original_file_path'])
-        filename = os.path.basename(path)
-        # create dir if not exists
-        os.makedirs(path.replace(filename,''), exist_ok=True)
-        # create file from manifest.json
-        with open(os.path.join(DIR_PATH, dict['original_file_path']), 'w+') as fp:
-            fp.write(dict['macro_sql'])
+        if dict['package_name'] not in ['dbt', 'dbt_utils', 'dbt_artifacts', 'codegen', 'dbt_snowflake', 'pro_serv_utils']:
+            print(f'Creating macro: {macro}')
+            
+            path = os.path.join(DIR_PATH, dict['original_file_path'])
+            filename = os.path.basename(path)
+            # create dir if not exists
+            os.makedirs(path.replace(filename,''), exist_ok=True)
+            # create file from manifest.json
+            with open(os.path.join(DIR_PATH, dict['original_file_path']), 'w+') as fp:
+                fp.write(dict['macro_sql'])
 
     for source, dict in manifest['sources'].items():
         print(f'Creating source: {source}')
