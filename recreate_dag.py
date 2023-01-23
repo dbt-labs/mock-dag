@@ -103,14 +103,13 @@ def recreate_dag(anonymize):
             else:
                 move_to_models_path = os.path.join(DIR_PATH, 'models', dict['original_file_path'])
                 filename = os.path.basename(move_to_models_path)
-                print(f'filename: {move_to_models_path}')
                 # create dir if not exists
                 os.makedirs(move_to_models_path.replace(filename,''), exist_ok=True)
                 with open(move_to_models_path.replace('.csv', '.sql'), 'w+') as fp:
                     if resource_type == 'seed':
                         fp.write(f'-- this is a recreation of a {resource_type} in the models subfolder: \n\nselect 1 as dummmy_column_1')
                     else:
-                        sql_code=''
+                        sql_code = f'-- this is a recreation of a {resource_type} in the models subfolder: \n'
                         sources = dict['sources']
                         refs = dict['refs']
                         if refs == []:
