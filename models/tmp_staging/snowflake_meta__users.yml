@@ -1,9 +1,0 @@
-version: 2 
-
-sources:
-  - name: snowflake_meta 
-    database: snowflake 
-    schema: account_usage 
-    tables: 
-      - name: users 
-        identifier: users

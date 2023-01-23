@@ -1,9 +1,0 @@
-version: 2 
-
-sources:
-  - name: dbt_artifacts 
-    database: development 
-    schema: dbt_artifacts_kearns_added 
-    tables: 
-      - name: snapshot_executions 
-        identifier: snapshot_executions

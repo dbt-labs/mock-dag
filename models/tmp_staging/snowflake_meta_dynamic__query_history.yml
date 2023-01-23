@@ -1,9 +1,0 @@
-version: 2 
-
-sources:
-  - name: snowflake_meta_dynamic 
-    database: snowflake 
-    schema: account_usage 
-    tables: 
-      - name: query_history 
-        identifier: query_history
