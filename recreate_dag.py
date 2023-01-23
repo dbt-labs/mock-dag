@@ -77,34 +77,40 @@ def recreate_dag(anonymize):
                         # bring in their exact code
                         fp.write(dict['raw_code'])
                     else:
-                        # bring in their refs/sources, but only `select 1` as code
                         sql_code=''
-                        for item in dict['sources']:
-                            pre_code="-- {{ source('"
-                            mide_code="', '"
-                            post_code="') }}"
-                            sql_code += f'\n{pre_code}{item[0]}{mide_code}{item[1]}{post_code}'
-                        for item in dict['refs']:
-                            pre_code="-- {{ ref('"
-                            post_code="') }}"
-                            sql_code += f'\n{pre_code}{item[0]}{post_code}'
-                        sql_code += '\n select 1 \n'
-                        fp.write(sql_code)
+                        sources = dict['sources']
+                        refs = dict['refs']
+                        if refs == []:
+                            # bring in their commented out sources, but only `select 1` as code
+                            for source in sources:
+                                pre_code="-- {{ source('"
+                                mide_code="', '"
+                                post_code="') }}"
+                                sql_code += f'\n{pre_code}{source[0]}{mide_code}{source[1]}{post_code}'
+                            sql_code += '\n select 1 as dummmy_column_1 \n'
+                            fp.write(sql_code)
+                        else:
+                            for ref in refs:
+                                pre_code="select * from {{ ref('"
+                                post_code="') }}"
+                                sql_code += f'\n{pre_code}{ref[0]}{post_code} \n\n  union all \n'
+                            sql_code += '\nselect 1 as dummmy_column_1 \n'
+                            fp.write(sql_code)
                 if dict['resource_type'] == 'seed':
                     fp.write('')
 
     for macro, dict in manifest['macros'].items():
         # remove some of the standard dbt packages, that show up in manifest
-        if dict['package_name'] not in ['dbt', 'dbt_utils', 'dbt_artifacts', 'codegen', 'dbt_snowflake', 'pro_serv_utils']:
-            print(f'Creating macro: {macro}')
-            
-            path = os.path.join(DIR_PATH, dict['original_file_path'])
-            filename = os.path.basename(path)
-            # create dir if not exists
-            os.makedirs(path.replace(filename,''), exist_ok=True)
-            # create file from manifest.json
-            with open(os.path.join(DIR_PATH, dict['original_file_path']), 'w+') as fp:
-                fp.write(dict['macro_sql'])
+        # if dict['package_name'] not in ['dbt', 'dbt_utils', 'dbt_artifacts', 'codegen', 'dbt_snowflake', 'pro_serv_utils']:
+        print(f'Creating macro: {macro}')
+        
+        path = os.path.join(DIR_PATH, dict['original_file_path'])
+        filename = os.path.basename(path)
+        # create dir if not exists
+        os.makedirs(path.replace(filename,''), exist_ok=True)
+        # create file from manifest.json
+        with open(os.path.join(DIR_PATH, dict['original_file_path']), 'w+') as fp:
+            fp.write(dict['macro_sql'])
 
     for source, dict in manifest['sources'].items():
         print(f'Creating source: {source}')

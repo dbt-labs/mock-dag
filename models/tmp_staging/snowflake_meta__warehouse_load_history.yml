@@ -1,0 +1,9 @@
+version: 2 
+
+sources:
+  - name: snowflake_meta 
+    database: snowflake 
+    schema: account_usage 
+    tables: 
+      - name: warehouse_load_history 
+        identifier: warehouse_load_history
