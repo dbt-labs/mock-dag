@@ -19,39 +19,6 @@ def create_directory():
     except OSError as error:
         print("Directory '%s' can not be created" % FAKE_MODELS_SUBFOLDER)
 
-def create_nodes(levels):
-    """Build a triangle shaped dag of chosen level depth"""
-    create_directory()
-    if levels < 0:
-        return print('Error: Level 0 is the lowest depth')
-    prefix = 0
-    filenames = []
-    while levels > -1:
-        for i in range(2**levels):
-            suffix = i+1
-            file_name = f'_{prefix}__{suffix}.sql'
-            filenames.append(file_name)
-            if prefix == 0:
-                with open(os.path.join(FAKE_MODELS_PATH, file_name), 'w') as fp:
-                    fp.write('select 1')
-            else:
-                with open(os.path.join(FAKE_MODELS_PATH, file_name), 'w') as fp:
-                    ref_1 = filenames.pop(0).split('.',1)[0]
-                    ref_2 = filenames.pop(0).split('.',1)[0]
-                    open_ref = "{{ ref('"
-                    close_ref = "') }}"
-                    fp.write(f'select * from {open_ref}{ref_1}{close_ref}' '\n  union all \n' f'select * from {open_ref}{ref_2}{close_ref}')
-        levels -= 1
-        prefix += 1
-    print('Created files in the `fake_dag` subfolder!')
-
-
-def random_variables(x):
-    C = random.randint(1, x//4)
-    B = random.randint(C+1, x//3)
-    A = x - B - C
-    print(A, B, C)
-
 def random_dag_spec(levels, num_nodes):
     dag_spec = {}
     source_models = num_nodes // random.randint(2, 4)
@@ -80,24 +47,26 @@ def random_dag_spec(levels, num_nodes):
 
 def create_random_dag(levels, num_nodes, skip_levels=False):
     """Build a random shaped dag of chosen level depth and number of nodes"""
-    create_directory()
+    # create_directory()
     dag = random_dag_spec(levels, num_nodes)
     print(dag)
     # keys are levels
     # from range 0 to len(dag_spec)-1
         # for i in range(dag_spec[level])
-    filenames = []
     for level in range(len(dag)):
         for node in range(dag[level]):
             print('============================')
             print(f'level: {level}')
             print(f'node: {node}')
             file_name = f'_{level}__{node}.sql'
-            filenames.append(file_name)
+            # sources all have select 1 as the sql
             if level == 0:
                 print(file_name)
+                print('select 1')
             #     with open(os.path.join(FAKE_MODELS_PATH, file_name), 'w') as fp:
             #         fp.write('select 1')
+            
+            # non-source models have refs to upstream models
             else:
                 refs_needed = dag[level-1]  #50
                 nodes_to_distribute = dag[level] #6
@@ -106,11 +75,25 @@ def create_random_dag(levels, num_nodes, skip_levels=False):
                 print(f'file_name: {file_name}')
                 print(f'refs_for_this_node: {refs_for_this_node}')
                 print('refs:')
+                open_ref = "{{ ref('"
+                close_ref = "') }}"
+                
+
                 # if it uses all the refs or node is zero, count from 0
                 if refs_needed == refs_for_this_node or node == 0:
+                    refs_list = []
                     for i in range(refs_for_this_node):
                         ref_file_name = f'_{level-1}__{i}'
                         print(ref_file_name)
+                        refs_list.append(ref_file_name)
+
+                        # with open(os.path.join(FAKE_MODELS_PATH, file_name), 'w') as fp:
+                        for i_ref in ref_list:
+                            print(f'select * from {open_ref}{ref_1}{close_ref}' '\n  union all \n' f'select * from {open_ref}{ref_2}{close_ref}')
+            #         fp.write(f'select * from {open_ref}{ref_1}{close_ref}' '\n  union all \n' f'select * from {open_ref}{ref_2}{close_ref}')
+        #     print(nodes)
+
+
                 
                 # if it is the final node, count from end
                 elif node == dag[level]-1:
