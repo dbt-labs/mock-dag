@@ -47,7 +47,7 @@ def random_dag_spec(levels, num_nodes):
 
 def create_random_dag(levels, num_nodes, skip_levels=False):
     """Build a random shaped dag of chosen level depth and number of nodes"""
-    # create_directory()
+    create_directory()
     dag = random_dag_spec(levels, num_nodes)
     print(dag)
     # keys are levels
@@ -59,58 +59,66 @@ def create_random_dag(levels, num_nodes, skip_levels=False):
             print(f'level: {level}')
             print(f'node: {node}')
             file_name = f'_{level}__{node}.sql'
-            # sources all have select 1 as the sql
-            if level == 0:
-                print(file_name)
-                print('select 1')
-            #     with open(os.path.join(FAKE_MODELS_PATH, file_name), 'w') as fp:
-            #         fp.write('select 1')
-            
-            # non-source models have refs to upstream models
-            else:
-                refs_needed = dag[level-1]  #50
-                nodes_to_distribute = dag[level] #6
-                min_refs = refs_needed // nodes_to_distribute
-                refs_for_this_node = np.clip(min_refs + random.randint(0,3), a_min = 1, a_max = refs_needed)
-                print(f'file_name: {file_name}')
-                print(f'refs_for_this_node: {refs_for_this_node}')
-                print('refs:')
-                open_ref = "{{ ref('"
-                close_ref = "') }}"
+            with open(os.path.join(FAKE_MODELS_PATH, file_name), 'w') as fp:
                 
-
-                # if it uses all the refs or node is zero, count from 0
-                if refs_needed == refs_for_this_node or node == 0:
-                    refs_list = []
-                    for i in range(refs_for_this_node):
-                        ref_file_name = f'_{level-1}__{i}'
-                        print(ref_file_name)
-                        refs_list.append(ref_file_name)
-
-                        # with open(os.path.join(FAKE_MODELS_PATH, file_name), 'w') as fp:
-                        for i_ref in ref_list:
-                            print(f'select * from {open_ref}{ref_1}{close_ref}' '\n  union all \n' f'select * from {open_ref}{ref_2}{close_ref}')
-            #         fp.write(f'select * from {open_ref}{ref_1}{close_ref}' '\n  union all \n' f'select * from {open_ref}{ref_2}{close_ref}')
-        #     print(nodes)
-
-
+                # sources all have select 1 as the sql
+                if level == 0:
+                    print(file_name)
+                    fp.write('select 1 as dummmy_column_1')
                 
-                # if it is the final node, count from end
-                elif node == dag[level]-1:
-                    # print(f'i:{i}')
-                    # print(i*min_refs)
-                    start_point = refs_needed - refs_for_this_node
-                    for ii in range(start_point, refs_needed):
-                        ref_file_name = f'_{level-1}__{ii}'
-                        print(ref_file_name)
-
-                # middle nodes should start counting from somewhere in the middle, using floor division
+                # non-source models have refs to upstream models
                 else:
-                    print(min_refs * node)
-                    start_point = min_refs * node
-                    for iii in range(start_point, start_point + refs_for_this_node):
-                        ref_file_name = f'_{level-1}__{iii}'
-                        print(ref_file_name)
+                    refs_needed = dag[level-1]  #50
+                    nodes_to_distribute = dag[level] #6
+                    min_refs = refs_needed // nodes_to_distribute
+                    refs_for_this_node = np.clip(min_refs + random.randint(0,3), a_min = 1, a_max = refs_needed)
+                    print(f'file_name: {file_name}')
+                    print(f'refs_for_this_node: {refs_for_this_node}')
+                    print('refs:')
+                    open_ref = "{{ ref('"
+                    close_ref = "') }}"
+
+                    # if it uses all the refs or node is zero, count from 0
+                    if refs_needed == refs_for_this_node or node == 0:
+                        output_refs = []
+                        sql_code=''
+                        for i in range(refs_for_this_node):
+                            ref_file_name = f'_{level-1}__{i}'
+                            print(ref_file_name)
+                            sql_code += f'select * from {open_ref}{ref_file_name}{close_ref} \n  union all \n'
+                            
+                        sql_code += 'select 1 as dummmy_column_1 \n'
+                        print(sql_code)
+                        fp.write(sql_code)
+                    
+                    # if it is the final node, count from end
+                    elif node == dag[level]-1:
+                        # print(f'i:{i}')
+                        # print(i*min_refs)
+                        start_point = refs_needed - refs_for_this_node
+                        sql_code=''
+                        for ii in range(start_point, refs_needed):
+                            ref_file_name = f'_{level-1}__{ii}'
+                            print(ref_file_name)
+                            sql_code += f'select * from {open_ref}{ref_file_name}{close_ref} \n  union all \n'
+                            
+                        sql_code += 'select 1 as dummmy_column_1 \n'
+                        print(sql_code)
+                        fp.write(sql_code)
+
+                    # middle nodes should start counting from somewhere in the middle, using floor division
+                    else:
+                        print(min_refs * node)
+                        start_point = min_refs * node
+                        sql_code=''
+                        for iii in range(start_point, start_point + refs_for_this_node):
+                            ref_file_name = f'_{level-1}__{iii}'
+                            print(ref_file_name)
+                            sql_code += f'select * from {open_ref}{ref_file_name}{close_ref} \n  union all \n'
+                            
+                        sql_code += 'select 1 as dummmy_column_1 \n'
+                        print(sql_code)
+                        fp.write(sql_code)
 
 
 
