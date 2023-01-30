@@ -2,10 +2,12 @@ import os
 import random
 import sys
 
+from collections import OrderedDict
 import numpy as np
 
 levels = int(sys.argv[1])
 num_nodes = int(sys.argv[2])
+skip_levels = sys.argv[3]
 
 # extract the current filepath
 DIR_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -18,6 +20,13 @@ def create_directory():
         print("Directory '%s' created successfully" % FAKE_MODELS_SUBFOLDER)
     except OSError as error:
         print("Directory '%s' can not be created" % FAKE_MODELS_SUBFOLDER)
+
+def coin_flip():
+    coin = random.randint(0, 1)
+    if coin == 0:
+        return 'Heads'
+    if coin == 1:
+        return 'Tails'
 
 def random_dag_spec(levels, num_nodes):
     dag_spec = {}
@@ -37,22 +46,15 @@ def random_dag_spec(levels, num_nodes):
             dag_spec[level] = nodes_in_level
         if level == 0:
             dag_spec[level] = source_models
-    print(dag_spec)
-    print(len(dag_spec))
-    print(dag_spec[len(dag_spec)-1])
-    print(dag_spec.keys())
-    print(dag_spec.values())
-    print(dag_spec.items())
     return(dag_spec)
 
-def create_random_dag(levels, num_nodes, skip_levels=False):
+def create_random_dag(levels, num_nodes, skip_levels):
     """Build a random shaped dag of chosen level depth and number of nodes"""
     create_directory()
     dag = random_dag_spec(levels, num_nodes)
-    print(dag)
+    ordered_dag = OrderedDict(sorted(dag.items()))
+    print(f'Starting to create files and sql for DAG structure: {ordered_dag}')
     # keys are levels
-    # from range 0 to len(dag_spec)-1
-        # for i in range(dag_spec[level])
     for level in range(len(dag)):
         for node in range(dag[level]):
             print('============================')
@@ -107,6 +109,7 @@ def create_random_dag(levels, num_nodes, skip_levels=False):
                         fp.write(sql_code)
 
                     # middle nodes should start counting from somewhere in the middle, using floor division
+                    # middle nodes have a chance at skip_level references if level 2 or higher and `skip_levels` flag set to True
                     else:
                         print(min_refs * node)
                         start_point = min_refs * node
@@ -115,73 +118,18 @@ def create_random_dag(levels, num_nodes, skip_levels=False):
                             ref_file_name = f'_{level-1}__{iii}'
                             print(ref_file_name)
                             sql_code += f'select * from {open_ref}{ref_file_name}{close_ref} \n  union all \n'
-                            
+                        # skip level chance
+                        if level >= 2 and skip_levels:
+                            flip = coin_flip()
+                            if flip == 'Heads':
+                                random_node = random.randint(0, dag[level-2])
+                                ref_file_name = f'_{level-2}__{random_node}'
+                                print(ref_file_name)
+                                sql_code += f'select * from {open_ref}{ref_file_name}{close_ref} \n  union all \n'
                         sql_code += 'select 1 as dummmy_column_1 \n'
                         print(sql_code)
                         fp.write(sql_code)
-
-
-
-                    # if i == 0:
-                    #     ref_file_name = f'_{level-1}__{i}'
-                    #     print(ref_file_name)
-                    #     print('====')
-                        
-                    # if refs_for_this_node == 2:
-                    #     ref_file_name = f'_{level-1}__{refs_needed-1-i}'
-                    #     print(ref_file_name)
-                    #     print('====')
-                    # else:
-                    #     print('unsure')
-
-                # print('====')
-
-            #     with open(os.path.join(FAKE_MODELS_PATH, file_name), 'w') as fp:
-            #         ref_1 = filenames.pop(0).split('.',1)[0]
-            #         ref_2 = filenames.pop(0).split('.',1)[0]
-            #         open_ref = "{{ ref('"
-            #         close_ref = "') }}"
-            #         fp.write(f'select * from {open_ref}{ref_1}{close_ref}' '\n  union all \n' f'select * from {open_ref}{ref_2}{close_ref}')
-        #     print(nodes)
-    
-
-
-
-
-    # prefix = 0
-    # filenames = []
-    # while levels > -1:
-    #     for i in range(2**levels):
-    #         suffix = i+1
-    #         file_name = f'_{prefix}__{suffix}.sql'
-    #         filenames.append(file_name)
-    #         if prefix == 0:
-    #             with open(os.path.join(FAKE_MODELS_PATH, file_name), 'w') as fp:
-    #                 fp.write('select 1')
-    #         else:
-    #             with open(os.path.join(FAKE_MODELS_PATH, file_name), 'w') as fp:
-    #                 min = 
-    #                 ref_1 = filenames.pop(0).split('.',1)[0]
-    #                 ref_2 = filenames.pop(0).split('.',1)[0]
-    #                 open_ref = "{{ ref('"
-    #                 close_ref = "') }}"
-    #                 fp.write(f'select * from {open_ref}{ref_1}{close_ref}' '\n  union all \n' f'select * from {open_ref}{ref_2}{close_ref}')
-    #     levels -= 1
-    #     prefix += 1
-    # print('Created files in the `fake_dag` subfolder!')
-
-
-
-# def random_dag_spec(levels, num_nodes):
-#     dag_spec = {}
-#     for i in range(levels):
-#         nodes_in_level = random.randint(1, num_nodes//(levels+1))
-#         dag_spec[i] = nodes_in_level
-#     B = random.randint(C+1, num_nodes//3)
-#     A = x - B - C
-#     print(A, B, C)
-#     return A, B, C
-
+    print(f'Finished creatomg files and sql for DAG structure: {ordered_dag}')
 
 if __name__ == '__main__':
-    create_random_dag(levels, num_nodes)
+    create_random_dag(levels, num_nodes, skip_levels)
