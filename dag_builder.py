@@ -16,7 +16,7 @@ def create_directory():
         print("Directory '%s' can not be created" % FAKE_MODELS_SUBFOLDER)
 
 def create_nodes(levels):
-    """Build a triangle shaped dag of arbitrary level depth"""
+    """Build a fractal triangle shaped dag of arbitrary level depth"""
     if levels < 0:
         return print('Error: Level 0 is the lowest depth')
     prefix = 0
