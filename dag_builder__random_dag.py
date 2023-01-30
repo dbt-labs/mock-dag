@@ -122,7 +122,7 @@ def create_random_dag(levels, num_nodes, skip_levels):
                         if level >= 2 and skip_levels:
                             flip = coin_flip()
                             if flip == 'Heads':
-                                random_node = random.randint(0, dag[level-2])
+                                random_node = random.randint(0, dag[level-2]-1)
                                 ref_file_name = f'_{level-2}__{random_node}'
                                 print(ref_file_name)
                                 sql_code += f'select * from {open_ref}{ref_file_name}{close_ref} \n  union all \n'
