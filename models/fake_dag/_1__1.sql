@@ -1,7 +1,11 @@
-select * from {{ ref('_0__1') }} 
+select * from {{ ref('_0__5') }} 
   union all 
-select * from {{ ref('_0__2') }} 
+select * from {{ ref('_0__6') }} 
   union all 
-select * from {{ ref('_0__3') }} 
+select * from {{ ref('_0__7') }} 
+  union all 
+select * from {{ ref('_0__8') }} 
+  union all 
+select * from {{ ref('_0__9') }} 
   union all 
 select 1 as dummmy_column_1 
