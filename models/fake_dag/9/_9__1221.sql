@@ -1,9 +1,0 @@
-select * from {{ ref('_8__1221') }} 
-  union all 
-select * from {{ ref('_8__1222') }} 
-  union all 
-select * from {{ ref('_8__1223') }} 
-  union all 
-select * from {{ ref('_8__1224') }} 
-  union all 
-select 1 as dummmy_column_1 
