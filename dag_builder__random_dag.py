@@ -14,12 +14,12 @@ DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 FAKE_MODELS_SUBFOLDER = 'models/fake_dag'
 FAKE_MODELS_PATH = os.path.join(DIR_PATH, FAKE_MODELS_SUBFOLDER)
 
-def create_directory():
+def create_directory(path):
     try:
-        os.makedirs(FAKE_MODELS_PATH, exist_ok = True)
-        print("Directory '%s' created successfully" % FAKE_MODELS_SUBFOLDER)
+        os.makedirs(path, exist_ok = True)
+        print("Directory '%s' created successfully" % path)
     except OSError as error:
-        print("Directory '%s' can not be created" % FAKE_MODELS_SUBFOLDER)
+        print("Directory '%s' can not be created" % path)
 
 def coin_flip():
     coin = random.randint(0, 1)
@@ -50,18 +50,20 @@ def random_dag_spec(levels, num_nodes):
 
 def create_random_dag(levels, num_nodes, skip_levels):
     """Build a random shaped dag of chosen level depth and number of nodes"""
-    create_directory()
+    create_directory(FAKE_MODELS_PATH)
     dag = random_dag_spec(levels, num_nodes)
     ordered_dag = OrderedDict(sorted(dag.items()))
     print(f'Starting to create files and sql for DAG structure: {ordered_dag}')
     # keys are levels
     for level in range(len(dag)):
+        nested_directory = os.path.join(FAKE_MODELS_PATH, str(level))
+        create_directory(nested_directory)
         for node in range(dag[level]):
             print('============================')
             print(f'level: {level}')
             print(f'node: {node}')
             file_name = f'_{level}__{node}.sql'
-            with open(os.path.join(FAKE_MODELS_PATH, file_name), 'w') as fp:
+            with open(os.path.join(nested_directory, file_name), 'w') as fp:
                 
                 # sources all have select 1 as the sql
                 if level == 0:
@@ -129,7 +131,7 @@ def create_random_dag(levels, num_nodes, skip_levels):
                         sql_code += 'select 1 as dummmy_column_1 \n'
                         print(sql_code)
                         fp.write(sql_code)
-    print(f'Finished creatomg files and sql for DAG structure: {ordered_dag}')
+    print(f'Finished creating files and sql for DAG structure: {ordered_dag}')
 
 if __name__ == '__main__':
     create_random_dag(levels, num_nodes, skip_levels)
