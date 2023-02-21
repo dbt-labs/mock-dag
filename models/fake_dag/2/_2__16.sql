@@ -1,0 +1,13 @@
+select * from {{ ref('_1__32') }} 
+  union all 
+select * from {{ ref('_1__33') }} 
+  union all 
+select * from {{ ref('_1__34') }} 
+  union all 
+select * from {{ ref('_1__35') }} 
+  union all 
+select * from {{ ref('_1__36') }} 
+  union all 
+select * from {{ ref('_0__2086') }} 
+  union all 
+select 1 as dummmy_column_1 
