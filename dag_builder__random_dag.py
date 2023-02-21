@@ -32,18 +32,20 @@ def random_dag_spec(levels, num_nodes):
     dag_spec = {}
     source_models = num_nodes // random.randint(2, 4)
     non_source_models = num_nodes - source_models
+    nodes_left = num_nodes - source_models
     for level in reversed(range(levels+1)):
         if level == levels:
             nodes_in_level = level + random.randint(1-level, 0)
             dag_spec[level] = nodes_in_level
-        elif level != levels and level > 0:    
+            nodes_left -= nodes_in_level
+        if level != levels and level > 1:    
             level_up = level+1
             level_up_value = dag_spec[level_up]
-            try:
-                nodes_in_level = random.randint(level_up_value, non_source_models//(level+4))
-            except:
-                nodes_in_level = random.randint(non_source_models//(level+4), level_up_value)
+            nodes_in_level = random.randint(level_up_value, nodes_left // level)
             dag_spec[level] = nodes_in_level
+            nodes_left -= nodes_in_level
+        if level == 1:
+            dag_spec[level] = nodes_left
         if level == 0:
             dag_spec[level] = source_models
     return(dag_spec)
@@ -53,7 +55,8 @@ def create_random_dag(levels, num_nodes, skip_levels):
     create_directory(FAKE_MODELS_PATH)
     dag = random_dag_spec(levels, num_nodes)
     ordered_dag = OrderedDict(sorted(dag.items()))
-    print(f'Starting to create files and sql for DAG structure: {ordered_dag}')
+    num_of_nodes_created = sum(dag.values())
+    print(f'Starting to create {num_of_nodes_created} files and sql for DAG structure: {ordered_dag}')
     # keys are levels
     for level in range(len(dag)):
         nested_directory = os.path.join(FAKE_MODELS_PATH, str(level))
@@ -131,7 +134,8 @@ def create_random_dag(levels, num_nodes, skip_levels):
                         sql_code += 'select 1 as dummmy_column_1 \n'
                         print(sql_code)
                         fp.write(sql_code)
-    print(f'Finished creating files and sql for DAG structure: {ordered_dag}')
+    print(f'Finished creating {num_of_nodes_created} files and sql for DAG structure: {ordered_dag}')
 
 if __name__ == '__main__':
     create_random_dag(levels, num_nodes, skip_levels)
+    # random_dag_spec(levels, num_nodes)
