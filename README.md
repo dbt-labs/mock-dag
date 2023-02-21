@@ -19,3 +19,6 @@ python dag_builder__random_dag.py 5 40 True
 
 `skip_levels` = True
  - This is whether or not you want references to skip levels and be referenced from a model 2 levels downstream.
+
+Example using this to test at which point dbt Cloud starts to have degraded performance with number of models:
+https://www.loom.com/share/01e05301678f4f63a5ee5d25db005aa7
